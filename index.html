@@ -211,22 +211,41 @@ html[data-theme="colorful"] .day.has .dnum{border-bottom:2px solid var(--green);
 </style>
 <style>
 [hidden]{display:none!important}
-.cloud-panel{padding:12px 14px;margin-top:14px}
-.cloud-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.cloud-actions strong{overflow-wrap:anywhere}
-#cloudStatus{color:var(--muted);font-size:12px;line-height:1.8;margin:8px 0 0}
+.locked .app,.locked .modal,.locked .toast{display:none!important}
+.login-gate{min-height:100dvh;display:grid;place-items:center;padding:20px}
+.login-card{width:min(410px,100%);padding:28px}
+.login-mark{width:54px;height:54px;display:grid;place-items:center;border-radius:16px;background:var(--accent2);color:white;font-size:28px;font-weight:800;margin:0 auto 18px}
+.login-card h1{font-size:22px;text-align:center;margin:0 0 12px}
+.login-description{font-size:13px;text-align:center;color:var(--muted);line-height:1.9;margin:0 0 22px}
+.login-submit{width:100%;margin-top:20px;padding:12px}
+#authMessage{font-size:12px;color:var(--muted);line-height:1.9;margin-bottom:0}
+.sync-info{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:10px 3px 0}
+#cloudStatus{color:var(--muted);font-size:11px;line-height:1.8}
+.day{min-height:105px}
+.day-total{margin-top:10px;display:flex;flex-direction:column;gap:4px}
+.sum-label{color:var(--muted);font-size:11px}
+.day .dsum{position:static;font-size:13px;font-weight:700;direction:ltr;text-align:right;overflow-wrap:anywhere}
+.day:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 button:disabled{opacity:.5;cursor:wait}
-@media(max-width:620px){.cloud-actions .btn{font-size:12px;padding:8px 9px}}
+@media(max-width:620px){.day{min-height:92px}.day-total{margin-top:7px}.sum-label{font-size:10px}.day .dsum{font-size:10px}.login-card{padding:22px}}
 </style>
 </head>
-<body>
-<div class="app">
+<body class="locked"><main id="loginGate" class="login-gate"><section class="card login-card">
+  <div class="login-mark" aria-hidden="true">€</div>
+  <h1>مدیریت حساب روزمره</h1><p class="login-description">برای ورود به برنامه، نام کاربری و رمز عبور را وارد کنید.</p>
+  <form id="authForm"><div class="formgrid">
+  <div class="field full"><label for="authUsername">نام کاربری</label><input id="authUsername" dir="ltr" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
+  <div class="field full"><label for="authPassword">رمز عبور</label><input id="authPassword" type="password" dir="ltr" autocomplete="current-password" required></div>
+  </div><button class="btn primary login-submit" id="submitLogin" type="submit">ورود به برنامه</button>
+  <p id="authMessage" role="status" aria-live="polite"></p></form></section></main>
+
+<div class="app" hidden>
   <div class="topbar">
     <div class="brand">
       <h1>مدیریت حساب روزمره</h1>
       <p>ثبت هزینه‌های روزانه به یورو، تقویم و عناوین تکراری</p>
     </div>
-    <div class="top-actions">
+    <div class="top-actions"><button class="btn" id="logoutBtn">خروج</button>
       <div class="theme-control">
         <label for="themeSelect">تم</label>
         <select id="themeSelect" aria-label="انتخاب تم صفحه">
@@ -241,15 +260,10 @@ button:disabled{opacity:.5;cursor:wait}
     </div>
   </div>
 
-<section class="card cloud-panel" aria-label="حساب و همگام‌سازی">
-  <div class="cloud-actions"><strong id="accountLabel">حالت محلی</strong>
-  <button class="btn primary" id="loginBtn">ورود به حساب</button>
-  <button class="btn" id="logoutBtn" hidden>خروج از حساب</button>
-  <button class="btn" id="syncBtn">همگام‌سازی</button>
-  <button class="btn" id="importLocalBtn" hidden>افزودن هزینه‌های محلی</button>
-  <button class="btn" id="resolveBtn" hidden>دریافت نسخه آنلاین</button></div>
-  <p id="cloudStatus" role="status" aria-live="polite">برای دسترسی از دستگاه‌های دیگر وارد حساب شوید.</p>
-</section>
+<div class="sync-info">
+  <span id="cloudStatus" role="status" aria-live="polite"></span>
+  <button class="btn" id="resolveBtn" hidden>دریافت نسخه آنلاین</button>
+</div>
   <div class="grid">
     <section class="card calendar-card">
       <div class="month-head">
@@ -286,17 +300,9 @@ button:disabled{opacity:.5;cursor:wait}
     </aside>
   </div>
 
-  <div class="footer-note">حالت محلی: ذخیره در همین مرورگر. پس از ورود: ذخیره در حساب آنلاین و همگام‌سازی بین دستگاه‌ها.</div>
+  <div class="footer-note">اطلاعات در حساب شما ذخیره و بین دستگاه‌ها همگام می‌شود.</div>
 </div>
 
-<div class="modal" id="authModal"><div class="modalbox" style="max-width:440px">
-  <div class="modalhead"><h2>ورود به حساب آنلاین</h2><button class="close" data-close="authModal" aria-label="بستن">✕</button></div>
-  <div class="modalbody"><p style="color:var(--muted);line-height:1.8">با ایمیل و رمز حساب برنامهٔ قبلی وارد شوید. هزینه‌های هر حساب فقط برای همان حساب نمایش داده می‌شوند.</p>
-  <form id="authForm"><div class="formgrid">
-  <div class="field full"><label for="authEmail">ایمیل</label><input id="authEmail" type="email" dir="ltr" autocomplete="username" required></div>
-  <div class="field full"><label for="authPassword">رمز عبور</label><input id="authPassword" type="password" dir="ltr" autocomplete="current-password" required></div>
-  </div><div class="form-actions"><button class="btn primary" id="submitLogin" type="submit">ورود</button></div>
-  <p id="authMessage" role="status" style="color:var(--muted)"></p></form></div></div></div>
 <!-- Day modal -->
 <div class="modal" id="dayModal">
   <div class="modalbox">
@@ -407,8 +413,8 @@ button:disabled{opacity:.5;cursor:wait}
 const MONTHS_FA=["ژانویه","فوریه","مارس","آوریل","مه","ژوئن","ژوئیه","اوت","سپتامبر","اکتبر","نوامبر","دسامبر"];
 const defaultPresets=["اجاره","بیمه خودرو","قسط خودرو","سوخت","خرید خانه","رستوران / غذا","تلفن و اینترنت","باشگاه","دارو و سلامت","پوشاک","تفریح","پارکینگ","اشتراک نرم‌افزار","قبوض","سایر"];
 
-let data = JSON.parse(localStorage.getItem("dailyExpenseData_v1")||"{}");
-let presets = JSON.parse(localStorage.getItem("dailyExpensePresets_v1")||"null") || defaultPresets;
+let data = {};
+let presets = [...defaultPresets];
 let viewDate = new Date();
 viewDate.setDate(1);
 let activeDateKey = null;
@@ -449,7 +455,9 @@ function renderCalendar(){
     const el=document.createElement("div");
     el.className="day"+(other?" other":"")+(list.length?" has":"");
     if(cy===today.getFullYear()&&cm===today.getMonth()&&d===today.getDate()) el.classList.add("today");
-    el.innerHTML=`<div class="dnum">${d}</div>${list.length?`<div class="dsum">${fmtEUR(total)}</div><div class="dcount">${list.length} مورد</div>`:""}`;
+    el.innerHTML=`<div class="dnum">${d}</div><div class="day-total"><span class="sum-label">جمع</span><div class="dsum">${fmtEUR(total)}</div></div>`;
+    el.setAttribute("role","button");el.tabIndex=0;el.setAttribute("aria-label",`${faDate(k)}، جمع ${fmtEUR(total)}`);
+    el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openDay(k);}};
     el.onclick=()=>openDay(k);
     days.appendChild(el);
   }
@@ -641,8 +649,11 @@ themeSelect.addEventListener('change', () => {
 // Public browser key only; Supabase RLS restricts records to their owner.
 const CLOUD_URL = 'https://vldpojrqcsonyvkucnbk.supabase.co';
 const CLOUD_KEY = 'sb_publishable_0OyYyw2D5-0-FytwUyGznQ_tqO8s_Ql';
+const LOGIN_NAME='hadi';
+const LOGIN_EMAIL='hadi@daily-expenses.invalid';
+const AUTH_STORAGE_KEY='daily-expenses-auth-v2';
 const cloud = window.supabase ? window.supabase.createClient(CLOUD_URL, CLOUD_KEY, {
-  auth: {storageKey:'daily-expenses-auth-v1',persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
+  auth: {storageKey:AUTH_STORAGE_KEY,storage:window.sessionStorage,persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
 }) : null;
 let cloudUser=null, cloudRevision=0, cloudDirty=false, cloudSaving=false;
 let cloudReady=true, cloudConflict=false, cloudGeneration=0, localSequence=0;
@@ -655,19 +666,16 @@ function cacheState(){
 }
 function refreshExpenseUI(){renderCalendar();renderPresetPreview();if(activeDateKey)renderEntries();}
 function setEditingEnabled(enabled){
-  for(const id of ['saveEntryBtn','addPresetBtn','importFile','importLocalBtn'])document.getElementById(id).disabled=!enabled;
+  for(const id of ['saveEntryBtn','addPresetBtn','importFile'])document.getElementById(id).disabled=!enabled;
 }
 function allowExpenseChange(){
-  if(!cloudReady){toast('لطفاً تا دریافت اطلاعات حساب صبر کنید.');return false;}
+  if(!cloudUser||!cloudReady){toast('ابتدا وارد حساب شوید.');return false;}
   if(cloudConflict){toast('ابتدا تعارض نسخه‌ها را با دکمهٔ دریافت نسخه آنلاین حل کنید.');return false;}
   return true;
 }
 function storeExpenseState(){
   if(cloudUser){cloudDirty=true;localSequence++;cacheState();cloudStatus('ذخیره روی دستگاه؛ در انتظار همگام‌سازی…');void syncExpenses();}
-  else{
-    localStorage.setItem('dailyExpenseData_v1',JSON.stringify(data));
-    localStorage.setItem('dailyExpensePresets_v1',JSON.stringify(presets));
-  }
+  else throw new Error('Authentication required');
 }
 async function syncExpenses(){
   if(!cloud||!cloudUser||!cloudReady||cloudSaving||cloudConflict||!cloudDirty)return;
@@ -695,7 +703,7 @@ async function syncExpenses(){
       cloudConflict=true;setEditingEnabled(false);
       document.getElementById('resolveBtn').hidden=false;
       cloudStatus('نسخه آنلاین تغییر کرده؛ تغییرات این دستگاه محفوظ است.');
-    }else cloudStatus('همگام‌سازی انجام نشد؛ اطلاعات روی دستگاه محفوظ است. «همگام‌سازی» را دوباره بزنید.');
+    }else cloudStatus('همگام‌سازی انجام نشد؛ تغییرات محفوظ است و با برقراری اتصال دوباره ارسال می‌شود.');
   }finally{cloudSaving=false;}
 }
 async function readCloud(){
@@ -704,13 +712,12 @@ async function readCloud(){
   return result.data;
 }
 async function loadAccount(user){
-  if(cloudUser&&cloudUser.id===user.id){return;}
+  if(!user||user.email!==LOGIN_EMAIL){lockApp('نام کاربری یا رمز عبور درست نیست.');return;}
+  if(cloudUser&&cloudUser.id===user.id&&cloudReady){return;}
   cloudGeneration++;cloudUser=user;cloudReady=false;cloudDirty=false;cloudConflict=false;
+  const generation=cloudGeneration;
   data={};presets=[...defaultPresets];cloudRevision=0;editingId=null;
   hideModal('dayModal');hideModal('presetModal');setEditingEnabled(false);refreshExpenseUI();
-  document.getElementById('accountLabel').textContent=user.email||'حساب آنلاین';
-  document.getElementById('loginBtn').hidden=true;document.getElementById('logoutBtn').hidden=false;
-  document.getElementById('importLocalBtn').hidden=false;
   cloudStatus('در حال دریافت اطلاعات حساب…');
   let cached=null;
   try{cached=JSON.parse(localStorage.getItem(cacheKey())||'null');}catch{}
@@ -719,26 +726,39 @@ async function loadAccount(user){
       data=cached.data;presets=cached.presets;cloudRevision=Number(cached.revision)||0;cloudDirty=true;
     }else{
       const row=await readCloud();
+      if(generation!==cloudGeneration)return;
       if(row){data=row.expenses;presets=row.presets;cloudRevision=Number(row.revision);}
     }
+    if(generation!==cloudGeneration)return;
     cloudReady=true;cacheState();setEditingEnabled(true);refreshExpenseUI();
+    unlockApp();
     cloudStatus('متصل به حساب آنلاین');void syncExpenses();
   }catch{
+    if(generation!==cloudGeneration)return;
     if(cached){
       data=cached.data;presets=cached.presets;cloudRevision=Number(cached.revision)||0;cloudDirty=!!cached.dirty;
       cloudReady=true;setEditingEnabled(true);refreshExpenseUI();cloudStatus('اتصال برقرار نشد؛ نسخهٔ ذخیره‌شدهٔ این حساب نمایش داده می‌شود.');
-    }else cloudStatus('دریافت اطلاعات انجام نشد. دکمهٔ همگام‌سازی را دوباره بزنید.');
+      unlockApp();
+    }else document.getElementById('authMessage').textContent='دریافت اطلاعات انجام نشد. اتصال را بررسی کنید و دوباره وارد شوید.';
   }
 }
-function loadLocal(){
-  cloudGeneration++;cloudUser=null;cloudDirty=false;cloudConflict=false;cloudReady=true;cloudRevision=0;
-  try{data=JSON.parse(localStorage.getItem('dailyExpenseData_v1')||'{}');presets=JSON.parse(localStorage.getItem('dailyExpensePresets_v1')||'null')||[...defaultPresets];}
-  catch{data={};presets=[...defaultPresets];}
+function unlockApp(){
+  document.getElementById('loginGate').hidden=true;
+  document.querySelector('.app').hidden=false;
+  document.body.classList.remove('locked');
+  document.getElementById('authPassword').value='';
+}
+function lockApp(message=''){
+  cloudGeneration++;cloudUser=null;cloudDirty=false;cloudConflict=false;cloudReady=false;cloudRevision=0;
+  data={};presets=[...defaultPresets];
   editingId=null;activeDateKey=null;hideModal('dayModal');hideModal('presetModal');
-  document.getElementById('accountLabel').textContent='حالت محلی';
-  document.getElementById('loginBtn').hidden=false;document.getElementById('logoutBtn').hidden=true;
-  document.getElementById('importLocalBtn').hidden=true;document.getElementById('resolveBtn').hidden=true;
-  setEditingEnabled(true);refreshExpenseUI();cloudStatus('برای دسترسی از دستگاه‌های دیگر وارد حساب شوید.');
+  hideModal('backupModal');hideModal('monthModal');
+  document.getElementById('resolveBtn').hidden=true;
+  document.body.classList.add('locked');document.querySelector('.app').hidden=true;
+  document.getElementById('loginGate').hidden=false;
+  document.getElementById('authPassword').value='';
+  document.getElementById('authMessage').textContent=message;
+  setEditingEnabled(false);refreshExpenseUI();
 }
 async function refreshCloud(){
   if(!cloudUser||cloudSaving||cloudConflict)return;
@@ -754,39 +774,27 @@ async function refreshCloud(){
     cloudStatus('همگام شد ✓');
   }catch{cloudStatus('اتصال برقرار نشد؛ نسخهٔ این دستگاه محفوظ است.');}
 }
-document.getElementById('loginBtn').onclick=()=>showModal('authModal');
 document.getElementById('authForm').onsubmit=async e=>{
   e.preventDefault();const button=document.getElementById('submitLogin');button.disabled=true;
   const message=document.getElementById('authMessage');message.textContent='در حال ورود…';
   try{
     if(!cloud)throw Error();
-    const result=await cloud.auth.signInWithPassword({email:document.getElementById('authEmail').value.trim(),password:document.getElementById('authPassword').value});
+    if(document.getElementById('authUsername').value.trim().toLowerCase()!==LOGIN_NAME){
+      message.textContent='نام کاربری یا رمز عبور درست نیست.';return;
+    }
+    const result=await cloud.auth.signInWithPassword({email:LOGIN_EMAIL,password:document.getElementById('authPassword').value});
     document.getElementById('authPassword').value='';
-    if(result.error){message.textContent='ورود انجام نشد؛ ایمیل، رمز یا اتصال اینترنت را بررسی کنید.';return;}
-    hideModal('authModal');message.textContent='';await loadAccount(result.data.user);
+    if(result.error){message.textContent='ورود انجام نشد؛ نام کاربری، رمز یا اتصال اینترنت را بررسی کنید.';return;}
+    message.textContent='';await loadAccount(result.data.user);
   }catch{message.textContent='اتصال به سرویس ورود برقرار نشد. اینترنت را بررسی کنید.';}
   finally{button.disabled=false;}
 };
 document.getElementById('logoutBtn').onclick=async()=>{
-  if(cloudSaving){toast('تا پایان همگام‌سازی صبر کنید.');return;}
-  if(cloudDirty){await syncExpenses();if(cloudDirty){toast('تغییرات هنوز آنلاین ذخیره نشده‌اند؛ ابتدا همگام‌سازی یا پشتیبان‌گیری کنید.');return;}}
-  const result=await cloud.auth.signOut({scope:'local'});
-  if(result.error){toast('خروج انجام نشد؛ دوباره تلاش کنید.');return;}
-  loadLocal();
-};
-document.getElementById('syncBtn').onclick=()=>{if(cloudUser)void refreshCloud();else showModal('authModal');};
-document.getElementById('importLocalBtn').onclick=()=>{
-  if(!allowExpenseChange()||!cloudUser)return;
-  if(!confirm('هزینه‌های محلی این مرورگر به حساب آنلاین شما اضافه شوند؟'))return;
-  try{
-    const old=JSON.parse(localStorage.getItem('dailyExpenseData_v1')||'{}');
-    const oldPresets=JSON.parse(localStorage.getItem('dailyExpensePresets_v1')||'null')||defaultPresets;
-    Object.entries(old).forEach(([date,entries])=>{
-      const current=data[date]||[],ids=new Set(current.map(x=>x.id));
-      data[date]=current.concat(entries.filter(x=>!ids.has(x.id)));
-    });
-    presets=[...new Set([...presets,...oldPresets])];saveAll();refreshExpenseUI();
-  }catch{toast('خواندن اطلاعات محلی انجام نشد.');}
+  if(cloudUser)cacheState();
+  lockApp();
+  document.getElementById('submitLogin').disabled=true;
+  try{await cloud.auth.signOut({scope:'local'});}
+  finally{try{window.sessionStorage.removeItem(AUTH_STORAGE_KEY);}catch{}document.getElementById('submitLogin').disabled=false;}
 };
 document.getElementById('resolveBtn').onclick=async()=>{
   if(cloudSaving)return;
@@ -804,16 +812,14 @@ window.addEventListener('focus',()=>void refreshCloud());
 setInterval(()=>{if(!document.hidden)void refreshCloud();},30000);
 if(cloud){
   cloud.auth.onAuthStateChange((event,session)=>{
-    if(event==='SIGNED_OUT')setTimeout(loadLocal,0);
-    else if(event==='SIGNED_IN'&&session&&!cloudUser)setTimeout(()=>void loadAccount(session.user),0);
+    if(event==='SIGNED_OUT')setTimeout(()=>lockApp(),0);
   });
   cloudReady=false;setEditingEnabled(false);
-  cloud.auth.getSession().then(({data:sessionData,error})=>{
-    if(error){loadLocal();cloudStatus('ورود آنلاین در دسترس نیست؛ حالت محلی فعال است.');}
-    else if(sessionData.session)void loadAccount(sessionData.session.user);
-    else loadLocal();
-  }).catch(()=>loadLocal());
-}else {loadLocal();cloudStatus('سرویس آنلاین بارگیری نشد؛ حالت محلی فعال است.');}
+  cloud.auth.getUser().then(({data:userData,error})=>{
+    if(!error&&userData.user&&userData.user.email===LOGIN_EMAIL)void loadAccount(userData.user);
+    else lockApp();
+  }).catch(()=>lockApp('برای ورود اتصال اینترنت را بررسی کنید.'));
+}else {lockApp('سرویس ورود بارگیری نشد؛ اتصال اینترنت را بررسی و صفحه را تازه کنید.');}
 
 </script>
 </body>
